@@ -48,23 +48,45 @@
                         </select>
                     </div>
 
-                    <!-- Custom Time Slot Filter -->
-                    <div class="filter-group filter-group-time">
-                        <label class="filter-label" for="customTimeInput">
+                    <!-- Time Range Filter (Similar to Screenshot) -->
+                    <div class="filter-group filter-group-timerange">
+                        <label class="filter-label">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                            Time Slot (Custom Range, e.g. 10-12)
+                            Time Range
                         </label>
-                        <div class="time-input-row">
-                            <input 
-                                type="text" 
-                                id="customTimeInput" 
-                                class="filter-control time-text-input" 
-                                placeholder="Type slot (e.g. 10-12, 8:25-9:50)"
-                            />
-                            <div class="time-range-picker">
-                                <input type="time" id="timeFrom" class="filter-control time-pick" title="From Time" aria-label="From Time" />
-                                <span class="time-separator">to</span>
-                                <input type="time" id="timeTo" class="filter-control time-pick" title="To Time" aria-label="To Time" />
+                        <div class="timerange-dual">
+                            <div class="timerange-col">
+                                <span class="timerange-sublabel">Start Time</span>
+                                <select id="startTimeSelect" class="filter-control select-time" aria-label="Start Time">
+                                    <option value="">Any</option>
+                                    <option value="08:00">08:00 AM</option>
+                                    <option value="09:00">09:00 AM</option>
+                                    <option value="10:00">10:00 AM</option>
+                                    <option value="11:00">11:00 AM</option>
+                                    <option value="12:00">12:00 PM</option>
+                                    <option value="13:00">01:00 PM</option>
+                                    <option value="14:00">02:00 PM</option>
+                                    <option value="15:00">03:00 PM</option>
+                                    <option value="16:00">04:00 PM</option>
+                                    <option value="17:00">05:00 PM</option>
+                                </select>
+                            </div>
+                            <div class="timerange-col">
+                                <span class="timerange-sublabel">End Time</span>
+                                <select id="endTimeSelect" class="filter-control select-time" aria-label="End Time">
+                                    <option value="">Any</option>
+                                    <option value="08:00">08:00 AM</option>
+                                    <option value="09:00">09:00 AM</option>
+                                    <option value="10:00">10:00 AM</option>
+                                    <option value="11:00">11:00 AM</option>
+                                    <option value="12:00">12:00 PM</option>
+                                    <option value="13:00">01:00 PM</option>
+                                    <option value="14:00">02:00 PM</option>
+                                    <option value="15:00">03:00 PM</option>
+                                    <option value="16:00">04:00 PM</option>
+                                    <option value="17:00">05:00 PM</option>
+                                    <option value="18:00">06:00 PM</option>
+                                </select>
                             </div>
                         </div>
                     </div>
@@ -99,17 +121,6 @@
                             Reset
                         </button>
                     </div>
-                </div>
-
-                <!-- Quick Preset Chips -->
-                <div class="time-presets">
-                    <span class="presets-title">Quick Time Slots:</span>
-                    <button type="button" class="preset-chip active" data-slot="all">All Times</button>
-                    <button type="button" class="preset-chip" data-slot="08:00-10:00">8:00 - 10:00</button>
-                    <button type="button" class="preset-chip" data-slot="10:00-12:00">10:00 - 12:00</button>
-                    <button type="button" class="preset-chip" data-slot="12:00-14:00">12:00 - 2:00</button>
-                    <button type="button" class="preset-chip" data-slot="14:00-16:00">2:00 - 4:00</button>
-                    <button type="button" class="preset-chip" data-slot="16:00-17:00">4:00 - 5:00</button>
                 </div>
             </div>
         </section>

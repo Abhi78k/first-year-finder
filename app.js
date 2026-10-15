@@ -49,13 +49,11 @@ const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 // DOM Elements
 const dateFilter = document.getElementById('dateFilter');
-const customTimeInput = document.getElementById('customTimeInput');
-const timeFrom = document.getElementById('timeFrom');
-const timeTo = document.getElementById('timeTo');
+const startTimeSelect = document.getElementById('startTimeSelect');
+const endTimeSelect = document.getElementById('endTimeSelect');
 const deptFilter = document.getElementById('deptFilter');
 const blockFilter = document.getElementById('blockFilter');
 const resetBtn = document.getElementById('resetBtn');
-const presetChips = document.querySelectorAll('.preset-chip');
 
 const headerStats = document.getElementById('headerStats');
 const summarySection = document.getElementById('summarySection');
@@ -174,91 +172,23 @@ function fmtShortDate(dateStr) {
 }
 
 // ============================================================
-// Flexible Time Range Parser (e.g. "10-12", "10:00-12:00", "8:25-9:50", "2-4")
+// Time Range Dropdown Filter (Start Time & End Time)
 // ============================================================
-function parseTimeString(str) {
-    if (!str) return null;
-    str = str.trim().toLowerCase();
-    const isPM = str.includes('pm');
-    const isAM = str.includes('am');
-    str = str.replace(/(am|pm)/g, '').trim();
-
-    let h = 0;
-    let m = 0;
-
-    if (str.includes(':')) {
-        const parts = str.split(':');
-        h = parseInt(parts[0], 10) || 0;
-        m = parseInt(parts[1], 10) || 0;
-    } else {
-        h = parseInt(str, 10) || 0;
-        m = 0;
-    }
-
-    if (isPM && h < 12) {
-        h += 12;
-    } else if (isAM && h === 12) {
-        h = 0;
-    } else if (!isAM && !isPM && h >= 1 && h <= 6) {
-        // College timing context: 1, 2, 3, 4, 5, 6 refers to PM
-        h += 12;
-    }
-
-    return h * 60 + m;
-}
-
 function getActiveTimeFilter() {
-    // 1. Check custom text input
-    const text = customTimeInput.value.trim();
-    if (text) {
-        const separators = ['-', ' to ', '~', '–', '..'];
-        let foundSep = null;
-        for (const sep of separators) {
-            if (text.includes(sep)) {
-                foundSep = sep;
-                break;
-            }
-        }
+    const startVal = startTimeSelect.value;
+    const endVal = endTimeSelect.value;
 
-        if (foundSep) {
-            const parts = text.split(foundSep);
-            if (parts.length >= 2) {
-                let startMin = parseTimeString(parts[0]);
-                let endMin = parseTimeString(parts[1]);
-                if (startMin !== null && endMin !== null) {
-                    if (endMin <= startMin && endMin < 12 * 60) {
-                        endMin += 12 * 60;
-                    }
-                    return { startMin, endMin };
-                }
-            }
-        }
+    if (!startVal && !endVal) return null;
 
-        // Single hour input like "10" or "10:00"
-        const single = parseTimeString(text);
-        if (single !== null) {
-            return { startMin: single, endMin: single + 60 };
-        }
+    let startMin = startVal ? timeToMinutes(startVal) : 0;
+    let endMin = endVal ? timeToMinutes(endVal) : 24 * 60;
+
+    // If both specified and end <= start, ensure range covers at least that hour
+    if (startVal && endVal && endMin <= startMin) {
+        endMin = startMin + 60;
     }
 
-    // 2. Check time picker inputs (timeFrom, timeTo)
-    const fromVal = timeFrom.value;
-    const toVal = timeTo.value;
-
-    if (fromVal || toVal) {
-        const startMin = fromVal ? timeToMinutes(fromVal) : 0;
-        const endMin = toVal ? timeToMinutes(toVal) : 24 * 60;
-        return { startMin, endMin };
-    }
-
-    return null;
-}
-
-// Convert minutes to "HH:MM" for time pickers
-function minToTimeStr(min) {
-    const h = Math.floor(min / 60);
-    const m = min % 60;
-    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+    return { startMin, endMin };
 }
 
 // ============================================================
@@ -650,40 +580,6 @@ function escapeHTML(str) {
 }
 
 // ============================================================
-// Sync Time Inputs
-// ============================================================
-function syncFromTextToPickers() {
-    const range = getActiveTimeFilter();
-    if (range) {
-        timeFrom.value = minToTimeStr(range.startMin);
-        timeTo.value = minToTimeStr(range.endMin);
-    }
-}
-
-function syncFromPickersToText() {
-    if (timeFrom.value && timeTo.value) {
-        customTimeInput.value = `${timeFrom.value} - ${timeTo.value}`;
-    } else if (timeFrom.value) {
-        customTimeInput.value = `From ${timeFrom.value}`;
-    } else if (timeTo.value) {
-        customTimeInput.value = `Until ${timeTo.value}`;
-    } else {
-        customTimeInput.value = '';
-    }
-}
-
-// Update Active Preset Chip Styling
-function updatePresetChips(activeSlot) {
-    presetChips.forEach(chip => {
-        if (chip.getAttribute('data-slot') === activeSlot) {
-            chip.classList.add('active');
-        } else {
-            chip.classList.remove('active');
-        }
-    });
-}
-
-// ============================================================
 // Initialization & Event Listeners
 // ============================================================
 async function init() {
@@ -695,60 +591,18 @@ async function init() {
 
     // Dropdown filters
     dateFilter.addEventListener('change', render);
+    startTimeSelect.addEventListener('change', render);
+    endTimeSelect.addEventListener('change', render);
     deptFilter.addEventListener('change', render);
     blockFilter.addEventListener('change', render);
-
-    // Custom time input (debounce typing for responsive feel)
-    let timeInputTimeout;
-    customTimeInput.addEventListener('input', () => {
-        clearTimeout(timeInputTimeout);
-        timeInputTimeout = setTimeout(() => {
-            syncFromTextToPickers();
-            updatePresetChips('');
-            render();
-        }, 250);
-    });
-
-    // Time Pickers
-    timeFrom.addEventListener('change', () => {
-        syncFromPickersToText();
-        updatePresetChips('');
-        render();
-    });
-
-    timeTo.addEventListener('change', () => {
-        syncFromPickersToText();
-        updatePresetChips('');
-        render();
-    });
-
-    // Quick Preset Chips
-    presetChips.forEach(chip => {
-        chip.addEventListener('click', () => {
-            const slot = chip.getAttribute('data-slot');
-            if (slot === 'all') {
-                customTimeInput.value = '';
-                timeFrom.value = '';
-                timeTo.value = '';
-                updatePresetChips('all');
-            } else {
-                customTimeInput.value = slot;
-                syncFromTextToPickers();
-                updatePresetChips(slot);
-            }
-            render();
-        });
-    });
 
     // Reset Button
     resetBtn.addEventListener('click', () => {
         dateFilter.value = '';
-        customTimeInput.value = '';
-        timeFrom.value = '';
-        timeTo.value = '';
+        startTimeSelect.value = '';
+        endTimeSelect.value = '';
         deptFilter.value = '';
         blockFilter.value = '';
-        updatePresetChips('all');
         render();
     });
 }
